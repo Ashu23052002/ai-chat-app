@@ -1,27 +1,34 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { UserContext } from "../context/user.context";
 import axios from "../config/axios.js";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const { user } = useContext(UserContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
+  const [project, setProject] = useState([]);
+  const navigate = useNavigate();
 
   function createProject(e) {
     e.preventDefault();
-  //  console.log("Project Name: ", projectName);
-
     axios
       .post("/projects/create", { name: projectName })
       .then((res) => {
-        console.log("Project Created: ", res.data);
         setIsModalOpen(false);
       })
       .catch((err) => {
         console.log("Error: ", err);
       });
   }
-  // console.log("user: ",user.email);
+
+  useEffect(() => {
+    axios.get("/projects/all").then((res) => {
+      setProject(res.data.projects);
+    //  console.log("project: ",res.data.projects);
+    });
+  }, []);
+
   return (
     <main className="p-4">
       <div className="projects flex flex-wrap gap-3">
@@ -33,27 +40,29 @@ const Home = () => {
           <i className="ri-link ml-2"></i>
         </button>
 
-        {/* {
-                    project.map((project) => (
-                        <div key={project._id}
-                            onClick={() => {
-                                navigate(`/project`, {
-                                    state: { project }
-                                })
-                            }}
-                            className="project flex flex-col gap-2 cursor-pointer p-4 border border-slate-300 rounded-md min-w-52 hover:bg-slate-200">
-                            <h2
-                                className='font-semibold'
-                            >{project.name}</h2>
-
-                            <div className="flex gap-2">
-                                <p> <small> <i className="ri-user-line"></i> Collaborators</small> :</p>
-                                {project.users.length}
-                            </div>
-
-                        </div>
-                    ))
-                } */}
+        {project.map((project) => (
+          <div
+            key={project._id}
+            onClick={() => {
+              navigate(`/project`, {
+                state: { project },
+              });
+            }}
+            className="project flex flex-col gap-2 cursor-pointer p-4 border border-slate-300 rounded-md min-w-52 hover:bg-slate-200"
+          >
+            <h2 className="font-semibold">{project.name}</h2>
+            <div className="flex gap-2">
+              <i className="ri-user-line"></i>
+              <p>
+                <small>
+                  <i className="ri-user-line"></i> Collaborators
+                </small>
+                :
+              </p>
+              {project.users.length}
+            </div>
+          </div>
+        ))}
       </div>
 
       {isModalOpen && (

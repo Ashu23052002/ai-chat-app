@@ -57,13 +57,13 @@ export const addUserToProject = async (req, res) => {
     if (!loggedInUser) {
       return res.status(404).json({ message: "User not found" });
     }
-    console.log("projectid2 -> ",projectId);
+  //  console.log("projectid2 -> ",projectId);
     const project = await projectService.addUserToProject({
       projectId,
       users,
       userId: loggedInUser._id,
     });
-    console.log("project -> ",project);
+  //  console.log("project -> ",project);
     return res.status(200).json({ project });
   } catch (e) {
     console.log("Error in project.controller.js && addUserToProject: ", e);
