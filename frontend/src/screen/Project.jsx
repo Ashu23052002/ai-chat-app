@@ -7,6 +7,22 @@ import {
   receiveMessage,
   sendMessage,
 } from "../config/socket";
+import Markdown from "markdown-to-jsx";
+
+function SyntaxHighlightedCode(props) {
+  const ref = useRef(null);
+
+  React.useEffect(() => {
+    if (ref.current && props.className?.includes("lang-") && window.hljs) {
+      window.hljs.highlightElement(ref.current);
+
+      // hljs won't reprocess the element unless this attribute is removed
+      ref.current.removeAttribute("data-highlighted");
+    }
+  }, [props.className, props.children]);
+
+  return <code {...props} ref={ref} />;
+}
 
 const Project = () => {
   const location = useLocation();
@@ -19,8 +35,7 @@ const Project = () => {
   const messageBox = useRef(null);
 
   const [users, setUsers] = useState([]);
-  const [messages, setMessages] = useState([]);  // State for messages
-
+  const [messages, setMessages] = useState([]); // State for messages
 
   const handleUserClick = (id) => {
     setSelectedUserId((prevSelectedUserId) => {
@@ -50,39 +65,38 @@ const Project = () => {
       });
   }
 
-    const send = () => {
-      
-        sendMessage('project-message', {
-            message,
-            sender: user._id
-        })
-        setMessage("")
+  const send = () => {
+    sendMessage("project-message", {
+      message,
+      sender: user,
+    });
+    setMessages((prevMessages) => [...prevMessages, { sender: user, message }]); // Update messages state
+    setMessage("");
+  };
 
-    }
+  useEffect(() => {
+    initializeSocket(project._id);
 
-    useEffect(() => {
-        initializeSocket(project._id);
-    
-        receiveMessage('project-message', (data) => {
-            console.log(data)
-            setMessages(prevMessages => [...prevMessages, data])
-        })
-    
-        axios.get(`/projects/get-project/${location.state.project._id}`)
-            .then(res => {
-              setProject(res.data.project);
-            });
-    
-            axios.get('/users/all')
-                .then(res => {
-                setUsers(res.data.users)
-                })
-                .catch(err => {
-                    console.log(err)
-                })
-    
-    }, []);
+    receiveMessage("project-message", (data) => {
+      //  console.log(data)
+      setMessages((prevMessages) => [...prevMessages, data]);
+    });
 
+    axios
+      .get(`/projects/get-project/${location.state.project._id}`)
+      .then((res) => {
+        setProject(res.data.project);
+      });
+
+    axios
+      .get("/users/all")
+      .then((res) => {
+        setUsers(res.data.users);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   return (
     <main className="h-screen w-screen flex">
@@ -100,26 +114,28 @@ const Project = () => {
           </button>
         </header>
         <div className="conversation-area pt-14 pb-10 flex-grow flex flex-col h-full relative">
-            <div
-                ref={messageBox}
-                className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full scrollbar-hide"
-            >
-                {/* Map over messages state and display them */}
-                {messages.map((msg, index) => (
-                    <div key={index}
-                        className={`message p-2 bg-slate-100 w-fit rounded-md mb-2 relative  max-w-xs`} 
-                    >
-                        <small className='opacity-65 text-xs'>{msg.email}</small>
-                       <p className='text-sm'>{msg.message}</p>
-                      
-                    </div>
-                ))}
-                {/* show-message container */}
-                <div className="show-message  w-full flex items-end">
-                   <div className=" bg-blue-200 w-fit p-2 rounded-md ml-auto"> show-message</div> 
-                </div>
+          <div
+            ref={messageBox}
+            className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full scrollbar-hide"
+          >
+            {/* Map over messages state and display them */}
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`message p-2 bg-slate-100 w-fit rounded-md mb-2 relative  max-w-xs`}
+              >
+                <small className="opacity-65 text-xs">{msg.email}</small>
+                <p className="text-sm">{msg.message}</p>
+              </div>
+            ))}
+            {/* show-message container */}
+            <div className="show-message  w-full flex items-end">
+              <div className=" bg-blue-200 w-fit p-2 rounded-md ml-auto">
+                {" "}
+                show-message
+              </div>
             </div>
-
+          </div>
 
           <div className="inputField w-full flex absolute bottom-0">
             <input
@@ -164,8 +180,8 @@ const Project = () => {
           </div>
         </div>
       </section>
-       {/* rest of the code */}
-     
+      {/* rest of the code */}
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-4 rounded-md w-96 max-w-full relative">

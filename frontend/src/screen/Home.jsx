@@ -18,7 +18,7 @@ const Home = () => {
         setIsModalOpen(false);
       })
       .catch((err) => {
-        console.log("Error: ", err);
+        console.log("Error in home in project/create: ", err);
       });
   }
 
@@ -26,7 +26,10 @@ const Home = () => {
     axios.get("/projects/all").then((res) => {
       setProject(res.data.projects);
     //  console.log("project: ",res.data.projects);
-    });
+    }).catch(err => {
+      console.log("Error in home in project/all");
+      console.log(err)
+  })
   }, []);
 
   return (
