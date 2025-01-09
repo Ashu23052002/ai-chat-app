@@ -57,13 +57,13 @@ export const addUserToProject = async (req, res) => {
     if (!loggedInUser) {
       return res.status(404).json({ message: "User not found" });
     }
-  //  console.log("projectid2 -> ",projectId);
+    //  console.log("projectid2 -> ",projectId);
     const project = await projectService.addUserToProject({
       projectId,
       users,
       userId: loggedInUser._id,
     });
-  //  console.log("project -> ",project);
+    //  console.log("project -> ",project);
     return res.status(200).json({ project });
   } catch (e) {
     console.log("Error in project.controller.js && addUserToProject: ", e);
@@ -71,14 +71,37 @@ export const addUserToProject = async (req, res) => {
   }
 };
 
-
 export const getProjectById = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const project = await projectService.getProjectById({ projectId }); 
+    const project = await projectService.getProjectById({ projectId });
     return res.status(200).json({ project });
   } catch (e) {
     console.log("Error in project.controller.js && getProjectById: ", e);
     return res.status(400).json({ error: e.message });
   }
-}
+};
+
+export const updateFileTree = async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const { projectId, fileTree } = req.body;
+
+    const project = await projectService.updateFileTree({
+      projectId,
+      fileTree,
+    });
+
+    return res.status(200).json({
+      project,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ error: err.message });
+  }
+};

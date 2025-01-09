@@ -27,7 +27,8 @@ const Login = () => {
         navigate("/");
       })
       .catch((err) => {
-        console.log(err.response.data);
+        console.log("Error in login.jsx");
+        console.log(err);
       });
   }
 
